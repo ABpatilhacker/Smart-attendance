@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase libraries -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
+</head>
+<body>
+
+<div class="dashboard-container">
+  <header>
+    <h1>👩‍🏫 Teacher Dashboard</h1>
+    <button class="btn logout" onclick="signOutUser()">Logout</button>
+  </header>
+
+  <section>
+    <h2>Your Classes</h2>
+    <div id="classes-list"></div>
+    <button class="btn add-class" onclick="addClass()">+ Add Class</button>
+  </section>
+
+  <section>
+    <h2>Attendance</h2>
+    <div id="attendance-list">Select a class to mark attendance</div>
+  </section>
+</div>
+
+<script>
+  // Make sure user is logged in
+  checkAuth();
+
+  const classesList = document.getElementById("classes-list");
+  const attendanceList = document.getElementById("attendance-list");
+
+  // Load teacher's classes from database
+  function loadClasses() {
+    const uid = auth.currentUser.uid;
+    database.ref("teachers/" + uid + "/classes").on("value", snapshot => {
+      classesList.innerHTML = "";
+      snapshot.forEach(child => {
+        const className = child.key;
+        const btn = document.createElement("button");
+        btn.textContent = className;
+        btn.className = "btn class-btn";
+        btn.onclick = () => loadAttendance(className);
+        classesList.appendChild(btn);
+      });
+    });
+  }
+
+  loadClasses();
+
+  // Add new class
+  function addClass() {
+    const className = prompt("Enter class name:");
+    if(!className) return;
+    const uid = auth.currentUser.uid;
+    database.ref("teachers/" + uid + "/classes/" + className).set({
+      createdAt: Date.now()
+    });
+  }
+
+  // Load attendance for a class
+  function loadAttendance(className) {
+    attendanceList.innerHTML = "<h3>" + className + "</h3>";
+    const uid = auth.currentUser.uid;
+    database.ref("teachers/" + uid + "/classes/" + className + "/students").once("value", snapshot => {
+      attendanceList.innerHTML = "<h3>" + className + "</h3>";
+      snapshot.forEach(child => {
+        const studentName = child.val().name;
+        const div = document.createElement("div");
+        div.className = "student-row";
+        div.innerHTML = `
+          <span>${studentName}</span>
+          <button class="btn present-btn" onclick="markAttendance('${className}','${child.key}','present',this)">Present</button>
+          <button class="btn absent-btn" onclick="markAttendance('${className}','${child.key}','absent',this)">Absent</button>
+        `;
+        attendanceList.appendChild(div);
+      });
+    });
+  }
+
+  function markAttendance(className, studentId, status, btn) {
+    const uid = auth.currentUser.uid;
+    const date = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+    database.ref("teachers/" + uid + "/classes/" + className + "/attendance/" + date + "/" + studentId).set(status);
+    btn.style.backgroundColor = (status === "present") ? "#4CAF50" : "#F44336";
+  }
+</script>
+</body>
+</html>
