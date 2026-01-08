@@ -11,9 +11,6 @@ body {
   background: linear-gradient(to bottom, #e0f7fa, #80deea);
   color: #333;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 /* ===== HEADER ===== */
@@ -35,21 +32,21 @@ body {
   opacity: 0.9;
 }
 
-/* ===== MAIN CONTENT ===== */
-.container {
-  text-align: center;
-  padding: 20px;
-  flex-grow: 1;
-}
-
-/* HERO IMAGE */
+/* ===== HERO IMAGE ===== */
 .hero-img {
   width: 150px;
   max-width: 50%;
   margin: 20px auto;
+  display: block;
 }
 
-/* DESCRIPTION TEXT */
+/* ===== CONTAINER ===== */
+.container {
+  text-align: center;
+  padding: 20px;
+}
+
+/* ===== DESCRIPTION ===== */
 .desc {
   margin: 15px auto 30px;
   font-size: 1rem;
@@ -57,7 +54,7 @@ body {
   color: #555;
 }
 
-/* ===== BUTTONS ===== */
+/* ===== LOGIN BUTTONS ===== */
 .login-buttons {
   display: flex;
   justify-content: center;
@@ -72,15 +69,76 @@ body {
   color: white;
   font-weight: 600;
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
 }
 
 .btn.admin { background-color: #00796b; }
 .btn.teacher { background-color: #0288d1; }
 .btn.student { background-color: #f57c00; }
+.btn.login-btn { background-color: #0288d1; }
 
+/* Hover effects for buttons */
 .btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* ===== LOGIN PAGES ===== */
+.login-container {
+  max-width: 350px;
+  background: #ffffff;
+  margin: 50px auto;
+  padding: 30px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.login-container h2 {
+  margin-bottom: 25px;
+  color: #0288d1;
+}
+
+.login-container label {
+  display: block;
+  text-align: left;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.login-container input:focus {
+  border-color: #0288d1;
+  outline: none;
+}
+
+/* Login submit button */
+.login-container .btn.login-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+/* Back to home link */
+.login-container .back-home {
+  margin-top: 15px;
+}
+
+.login-container .back-home a {
+  text-decoration: none;
+  color: #0288d1;
+  font-weight: 500;
 }
 
 /* ===== FOOTER ===== */
@@ -90,10 +148,12 @@ body {
   background-color: #00796b;
   color: white;
   font-size: 0.9rem;
+  margin-top: 40px;
 }
 
 /* ===== RESPONSIVE ===== */
 @media(max-width: 600px){
   .hero-img { width: 120px; }
   .btn { width: 80%; font-size: 1rem; }
+  .login-container { margin: 30px 10px; padding: 25px 15px; }
 }
