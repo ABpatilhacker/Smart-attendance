@@ -1,40 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - Smart Attendance</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-<script src="firebase.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Smart Attendance</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="./firebase.js"></script>
 </head>
 <body>
-<div class="login-container">
-  <h2>Login</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="pass" placeholder="Password">
-  <button class="btn" onclick="login()">Login</button>
-</div>
+  <div class="login-container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="pass" placeholder="Password">
+    <button class="btn" onclick="login()">Login</button>
+  </div>
 
-<script>
-function login(){
-  const email=document.getElementById("email").value;
-  const pass=document.getElementById("pass").value;
-  auth.signInWithEmailAndPassword(email,pass)
-    .then(res=>{
-      const uid=res.user.uid;
-      // Check user type
-      database.ref("admins/"+uid).once("value").then(snap=>{
-        if(snap.exists()) window.location="admin.html";
-        else database.ref("teachers/"+uid).once("value").then(s=>{
-          if(s.exists()) window.location="teacher.html";
-          else window.location="student.html";
-        });
-      });
-    }).catch(err=>alert(err.message));
-}
-</script>
+  <script>
+    function login(){
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("pass").value;
+
+      if(!email || !pass){
+        alert("Please enter email and password!");
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, pass)
+        .then(res => {
+          const uid = res.user.uid;
+
+          // Check admin first
+          database.ref("admins/" + uid).once("value").then(adminSnap => {
+            if(adminSnap.exists()){
+              window.location = "admin.html";
+            } else {
+              // Check teacher
+              database.ref("teachers/" + uid).once("value").then(teacherSnap => {
+                if(teacherSnap.exists()){
+                  window.location = "teacher.html";
+                } else {
+                  // Check student
+                  database.ref("students/" + uid).once("value").then(studentSnap => {
+                    if(studentSnap.exists()){
+                      window.location = "student.html";
+                    } else {
+                      alert("User not found in database!");
+                    }
+                  });
+                }
+              });
+            }
+          });
+        })
+        .catch(err => alert("Login failed: " + err.message));
+    }
+  </script>
 </body>
 </html>
