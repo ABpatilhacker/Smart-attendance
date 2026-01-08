@@ -1,24 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Student</title>
-  <link rel="stylesheet" href="../css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login - Smart Attendance</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
-<div class="card">
-  <h2>Student Panel</h2>
-  <p>View attendance only</p>
-  <button onclick="logout()">Logout</button>
-</div>
+  <div class="login-container">
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="../js/firebase.js"></script>
-<script>
-function logout(){
- firebase.auth().signOut().then(()=>location.href="../index.html");
-}
-</script>
+    <h2>👨‍🎓 Student Login</h2>
+
+    <form id="student-login-form">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your email" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required>
+
+      <button type="submit" class="btn login-btn">Login</button>
+    </form>
+
+    <p class="back-home">
+      <a href="../index.html">⬅ Back to Home</a>
+    </p>
+
+  </div>
+
+  <script src="../js/firebase.js"></script>
+  <script>
+    const loginForm = document.getElementById("student-login-form");
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("Login Successful!");
+          window.location.href = "student-dashboard.html"; // redirect after login
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    });
+  </script>
+
 </body>
 </html>
