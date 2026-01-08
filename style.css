@@ -1,29 +1,39 @@
-/* General styles */
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; }
-header { background:#1976D2; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
-header h1 { margin:0; font-size:1.5rem; }
-.btn { padding:8px 15px; margin:5px; background:#2196F3; color:white; border:none; border-radius:4px; cursor:pointer; transition:0.3s; }
-.btn:hover { background:#1565C0; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #4CAF50, #2e7d32);
+  color: white;
+}
 
-/* Sidebar */
-.sidebar { width:200px; background:#333; color:white; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
-.sidebar button { background:none; border:none; color:white; padding:12px; text-align:left; width:100%; cursor:pointer; font-size:1rem; }
-.sidebar button:hover { background:#575757; }
+.home-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
 
-/* Main content */
-.main { margin-left:200px; padding:20px; }
-.card { background:white; padding:12px; margin:10px 0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);}
-.card h3 { margin:0 0 5px 0; }
-.defaulter { color:#F44336; font-weight:bold; }
+.home-container h1 {
+  font-size: 2rem;
+}
 
-/* Buttons for attendance */
-.att-btn { width:80px; margin-right:5px; }
-.att-btn.present { background:#4CAF50; }
-.att-btn.absent { background:#F44336; }
+.home-container p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
 
-/* Responsive */
-@media screen and (max-width:768px){
-  .main { margin-left:0; padding:10px; }
-  .sidebar { width:100%; height:auto; position:relative; flex-direction:row; }
-  .sidebar button{ flex:1; text-align:center; }
+.btn {
+  margin-top: 20px;
+  text-decoration: none;
+  background: white;
+  color: #2e7d32;
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #e8f5e9;
 }
