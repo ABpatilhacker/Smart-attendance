@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - Smart Attendance</title>
 <link rel="stylesheet" href="style.css">
-
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -13,29 +12,29 @@
 </head>
 <body>
 <div class="login-container">
-  <h2 id="role-title">Login</h2>
+  <h2>Login</h2>
   <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button class="btn" id="login-btn">Login</button>
+  <input type="password" id="pass" placeholder="Password">
+  <button class="btn" onclick="login()">Login</button>
 </div>
 
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-const role = urlParams.get('role');
-document.getElementById('role-title').textContent = role.charAt(0).toUpperCase() + role.slice(1) + ' Login';
-
-document.getElementById('login-btn').addEventListener('click', () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      if(role==='admin') window.location.href='admin.html';
-      else if(role==='teacher') window.location.href='teacher.html';
-      else window.location.href='student.html';
-    })
-    .catch(error => alert(error.message));
-});
+function login(){
+  const email=document.getElementById("email").value;
+  const pass=document.getElementById("pass").value;
+  auth.signInWithEmailAndPassword(email,pass)
+    .then(res=>{
+      const uid=res.user.uid;
+      // Check user type
+      database.ref("admins/"+uid).once("value").then(snap=>{
+        if(snap.exists()) window.location="admin.html";
+        else database.ref("teachers/"+uid).once("value").then(s=>{
+          if(s.exists()) window.location="teacher.html";
+          else window.location="student.html";
+        });
+      });
+    }).catch(err=>alert(err.message));
+}
 </script>
 </body>
 </html>
