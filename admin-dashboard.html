@@ -6,144 +6,98 @@
 <title>Admin Dashboard</title>
 
 <link rel="stylesheet" href="./style.css">
-</head>
 
-<body>
-
-<header>
-  <h1>🧑‍💼 Admin Dashboard</h1>
-  <button class="btn logout" onclick="logout()">Logout</button>
-</header>
-
-<div class="dashboard-container">
-  <h2>All Teachers</h2>
-  <div id="teachers-list"></div>
-
-  <div id="student-list" style="display:none;">
-    <h3 id="class-title"></h3>
-    <button class="btn" onclick="generateDefaulter()">Generate Defaulter List</button>
-    <div id="students-attendance"></div>
-  </div>
-</div>
-
-<!-- Firebase libraries (LOAD ONCE, AT BOTTOM) -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script src="./firebase.js"></script>
+</head>
+
+<body class="dashboard-body">
+
+<!-- HEADER -->
+<header class="dashboard-header">
+  <h1>🧑‍💼 Admin Dashboard</h1>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTeachers()">👩‍🏫 Teachers</button>
+  <button class="tab-btn" onclick="showStudents()">🎓 Students</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- TEACHERS -->
+  <div id="teachersSection">
+    <h2>All Teachers</h2>
+    <div id="teachersList" class="card-container"></div>
+  </div>
+
+  <!-- STUDENTS -->
+  <div id="studentsSection" style="display:none;">
+    <h2>All Students</h2>
+    <div id="studentsList" class="card-container"></div>
+  </div>
+
+</div>
 
 <script>
-const teachersList = document.getElementById("teachers-list");
-const studentListDiv = document.getElementById("student-list");
-const studentsAttendanceDiv = document.getElementById("students-attendance");
-const classTitle = document.getElementById("class-title");
+const teachersList = document.getElementById("teachersList");
+const studentsList = document.getElementById("studentsList");
+const teachersSection = document.getElementById("teachersSection");
+const studentsSection = document.getElementById("studentsSection");
 
-let currentTeacherId = "";
-let currentClass = "";
+// Tabs
+function showTeachers() {
+  teachersSection.style.display = "block";
+  studentsSection.style.display = "none";
+  document.querySelectorAll(".tab-btn")[0].classList.add("active");
+  document.querySelectorAll(".tab-btn")[1].classList.remove("active");
+}
 
-/* ✅ AUTH SAFE ENTRY POINT */
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "./login.html";
-    return;
-  }
-  loadTeachers();
+function showStudents() {
+  teachersSection.style.display = "none";
+  studentsSection.style.display = "block";
+  document.querySelectorAll(".tab-btn")[1].classList.add("active");
+  document.querySelectorAll(".tab-btn")[0].classList.remove("active");
+}
+
+// Load Teachers
+database.ref("teachers").on("value", snapshot => {
+  teachersList.innerHTML = "";
+  snapshot.forEach(snap => {
+    const t = snap.val();
+    teachersList.innerHTML += `
+      <div class="card">
+        <h3>👩‍🏫 ${t.name || "No Name"}</h3>
+        <p>${t.email || "No Email"}</p>
+        <small>Classes: ${t.classes ? Object.keys(t.classes).join(", ") : "None"}</small>
+      </div>
+    `;
+  });
 });
 
-/* LOAD ALL TEACHERS */
-function loadTeachers() {
-  database.ref("teachers").on("value", snapshot => {
-    teachersList.innerHTML = "";
-
-    if (!snapshot.exists()) {
-      teachersList.innerHTML = "<p>No teachers found.</p>";
-      return;
-    }
-
-    snapshot.forEach(teacherSnap => {
-      const teacher = teacherSnap.val();
-      const card = document.createElement("div");
-      card.className = "teacher-card";
-
-      let classesHTML = "<li>No classes</li>";
-      if (teacher.classes) {
-        classesHTML = Object.keys(teacher.classes)
-          .map(c =>
-            `<li>${c}
-              <button class="btn" onclick="viewClass('${teacherSnap.key}','${c}')">
-                View Students
-              </button>
-            </li>`
-          ).join("");
-      }
-
-      card.innerHTML = `
-        <h3>${teacher.name || "No Name"} (${teacher.email || "No Email"})</h3>
-        <p>Classes:</p>
-        <ul>${classesHTML}</ul>
-      `;
-
-      teachersList.appendChild(card);
-    });
+// Load Students
+database.ref("students").on("value", snapshot => {
+  studentsList.innerHTML = "";
+  snapshot.forEach(snap => {
+    const s = snap.val();
+    studentsList.innerHTML += `
+      <div class="card">
+        <h3>🎓 ${s.name || "Student"}</h3>
+        <p>Roll No: ${s.rollNumber || snap.key}</p>
+      </div>
+    `;
   });
-}
+});
 
-/* VIEW STUDENTS OF A CLASS */
-function viewClass(teacherId, className) {
-  currentTeacherId = teacherId;
-  currentClass = className;
-  classTitle.textContent = `Class: ${className}`;
-  studentsAttendanceDiv.innerHTML = "";
-  studentListDiv.style.display = "block";
-
-  database.ref(`teachers/${teacherId}/classes/${className}/students`)
-    .once("value", snap => {
-      if (!snap.exists()) {
-        studentsAttendanceDiv.innerHTML = "No students found.";
-        return;
-      }
-
-      snap.forEach(studentSnap => {
-        const div = document.createElement("div");
-        div.textContent = `${studentSnap.val().name || "No Name"} (Roll: ${studentSnap.key})`;
-        studentsAttendanceDiv.appendChild(div);
-      });
-    });
-}
-
-/* GENERATE DEFAULTER LIST */
-function generateDefaulter() {
-  const date = prompt(
-    "Enter date (YYYY-MM-DD):",
-    new Date().toISOString().split("T")[0]
-  );
-
-  if (!date) return;
-
-  database.ref(`teachers/${currentTeacherId}/classes/${currentClass}/attendance/${date}`)
-    .once("value", snap => {
-      if (!snap.exists()) {
-        alert("No attendance data for this date.");
-        return;
-      }
-
-      let defaulters = [];
-      snap.forEach(s => {
-        if (s.val() === "absent") defaulters.push(s.key);
-      });
-
-      alert(
-        defaulters.length
-          ? `Defaulters (${date}):\n${defaulters.join(", ")}`
-          : "No defaulters 🎉"
-      );
-    });
-}
-
-/* LOGOUT */
 function logout() {
   firebase.auth().signOut().then(() => {
-    window.location.href = "./login.html";
+    window.location.href = "index.html";
   });
 }
 </script>
