@@ -13,19 +13,20 @@
 </head>
 <body>
 
-<header class="dashboard-header">
-  <h1>👩‍🏫 Teacher Dashboard</h1>
-  <button class="btn logout" onclick="firebase.auth().signOut().then(()=>window.location='index.html')">Logout</button>
-</header>
+<div class="sidebar">
+  <h2>👩‍🏫 Teacher</h2>
+  <a href="#" class="active">My Classes</a>
+  <a href="#" onclick="generateDefaulter()">Defaulter List</a>
+  <a href="#" class="logout-btn" onclick="firebase.auth().signOut().then(()=>window.location='index.html')">Logout</a>
+</div>
 
-<div class="dashboard-content">
+<div class="main-content">
   <h2>Your Classes</h2>
   <div id="class-list" class="card-container"></div>
 
   <div id="student-section" class="hidden">
     <h3 id="class-title"></h3>
     <div id="students-list"></div>
-    <button class="btn" onclick="generateDefaulter()">Generate Defaulter List</button>
   </div>
 </div>
 
