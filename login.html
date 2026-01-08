@@ -1,31 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
 </head>
 <body>
-
-<div class="card">
-  <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+<div class="main" style="max-width:400px;margin:auto;margin-top:100px;">
+  <h1 style="text-align:center;">Login</h1>
+  <input type="email" id="email" placeholder="Email" style="width:100%;padding:8px;margin:5px 0;"><br>
+  <input type="password" id="password" placeholder="Password" style="width:100%;padding:8px;margin:5px 0;"><br>
+  <button class="btn" onclick="login()">Login</button>
+  <p id="msg" style="color:red;"></p>
 </div>
-<!-- Firebase App (core) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 
-<!-- Firebase Authentication -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-
-<!-- Firebase Realtime Database -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-
-<!-- Your Firebase config -->
-<script src="firebase.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="js/firebase.js"></script>
-<script src="js/auth.js"></script>
+<script>
+function login(){
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  auth.signInWithEmailAndPassword(email,password)
+    .then(user=>{
+      const uid = user.user.uid;
+      // redirect based on role (simple example)
+      database.ref("teachers/"+uid).once("value").then(snap=>{
+        if(snap.exists()) window.location.href="teacher-dashboard.html";
+        else if(email.includes("admin")) window.location.href="admin-dashboard.html";
+        else window.location.href="student-dashboard.html";
+      });
+    })
+    .catch(err=>{ document.getElementById("msg").textContent=err.message; });
+}
+</script>
 </body>
 </html>
