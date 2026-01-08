@@ -15,43 +15,77 @@
 
 <div class="sidebar">
   <h2>🧑‍💼 Admin</h2>
-  <a href="#" class="active">Dashboard</a>
-  <a href="#" onclick="showTeachers()">Teachers</a>
-  <a href="#" onclick="showStudents()">Students</a>
-  <a href="#" class="logout-btn" onclick="firebase.auth().signOut().then(()=>window.location='index.html')">Logout</a>
+  <a href="#" class="active" onclick="showDashboard()">Dashboard</a>
+  <a href="#" onclick="showAddTeacher()">Add Teacher</a>
+  <a href="#" onclick="showTeachers()">All Teachers</a>
+  <a href="#" onclick="showStudents()">All Students</a>
+  <a href="#" class="logout-btn" onclick="auth.signOut().then(()=>window.location='index.html')">Logout</a>
 </div>
 
-<div class="main-content">
-  <h2>Dashboard</h2>
-  <div id="content-list"></div>
+<div class="main-content" id="main-content">
+  <h2>Admin Dashboard</h2>
+  <div id="content"></div>
 </div>
 
 <script>
-firebase.auth().onAuthStateChanged(user=>{ if(!user) window.location='index.html'; });
-const contentList = document.getElementById("content-list");
+auth.onAuthStateChanged(user => {
+  if(!user) window.location='login.html';
+});
 
+// Show dashboard
+function showDashboard(){
+  document.getElementById("content").innerHTML="<h3>Welcome Admin!</h3>";
+}
+
+// Add Teacher
+function showAddTeacher(){
+  document.getElementById("content").innerHTML=`
+    <h3>Add Teacher</h3>
+    <input type="text" id="tname" placeholder="Name">
+    <input type="email" id="temail" placeholder="Email">
+    <input type="password" id="tpass" placeholder="Password">
+    <button class="btn" onclick="addTeacher()">Add</button>
+  `;
+}
+
+function addTeacher(){
+  const name=document.getElementById("tname").value;
+  const email=document.getElementById("temail").value;
+  const pass=document.getElementById("tpass").value;
+  auth.createUserWithEmailAndPassword(email,pass).then(cred=>{
+    const uid=cred.user.uid;
+    database.ref(`teachers/${uid}`).set({name,email,classes:{}});
+    alert("Teacher added!");
+    showAddTeacher();
+  }).catch(err=>alert(err.message));
+}
+
+// Show all teachers
 function showTeachers(){
-  contentList.innerHTML="<h3>All Teachers</h3>";
+  const content=document.getElementById("content");
+  content.innerHTML="<h3>All Teachers</h3>";
   database.ref("teachers").once("value", snap=>{
-    snap.forEach(snapT=>{
-      const t=snapT.val();
+    snap.forEach(t=>{
+      const teacher=t.val();
       const div=document.createElement("div");
       div.className="card";
-      div.innerHTML=`<h3>${t.name}</h3><p>${t.email}</p><p>Classes: ${t.classes ? Object.keys(t.classes).join(", ") : "None"}</p>`;
-      contentList.appendChild(div);
+      div.innerHTML=`<h4>${teacher.name}</h4><p>${teacher.email}</p>`;
+      content.appendChild(div);
     });
   });
 }
 
+// Show all students
 function showStudents(){
-  contentList.innerHTML="<h3>All Students</h3>";
+  const content=document.getElementById("content");
+  content.innerHTML="<h3>All Students</h3>";
   database.ref("students").once("value", snap=>{
-    snap.forEach(snapS=>{
-      const s=snapS.val();
+    snap.forEach(s=>{
+      const student=s.val();
       const div=document.createElement("div");
       div.className="card";
-      div.innerHTML=`<h3>${s.name}</h3><p>Roll: ${s.rollNumber}</p>`;
-      contentList.appendChild(div);
+      div.innerHTML=`<h4>${student.name}</h4><p>Roll: ${student.rollNumber}</p>`;
+      content.appendChild(div);
     });
   });
 }
