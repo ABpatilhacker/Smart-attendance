@@ -1,62 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login - Smart Attendance</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
+
+<style>
+/* Admin dashboard overrides */
+.main { margin-left:200px; padding:20px; }
+.sidebar { width:200px; background:#333; color:white; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
+.sidebar button { background:none; border:none; color:white; padding:12px; text-align:left; width:100%; cursor:pointer; }
+.sidebar button:hover { background:#575757; }
+.teacher-card, .student-card { background:white; padding:12px; margin:10px 0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.teacher-card h3 { margin:0 0 5px 0; }
+#student-list { margin-top:10px; padding:10px; background:#e3f2fd; border-radius:6px; display:none; }
+.defaulter { color:#F44336; font-weight:bold; }
+@media screen and (max-width:768px){ .main{ margin-left:0; padding:10px;} .sidebar{width:100%; height:auto; position:relative; flex-direction:row;} .sidebar button{ flex:1; text-align:center; } }
+</style>
 </head>
 <body>
 
-  <div class="login-container">
+<header>
+  <h1>🧑‍💼 Admin Dashboard</h1>
+  <button class="btn logout" onclick="signOutUser()">Logout</button>
+</header>
 
-    <h2>🧑‍💼 Admin Login</h2>
+<div class="sidebar">
+  <button onclick="showSection('teachers-section')">Teachers</button>
+  <button onclick="showSection('students-section')">Students</button>
+</div>
 
-    <form id="admin-login-form">
-      <label for="email">Email</label>
-      <input type="email" id="email" placeholder="Enter your email" required>
-
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter your password" required>
-
-      <button type="submit" class="btn login-btn">Login</button>
-    </form>
-
-    <p class="back-home">
-      <a href="index.html">⬅ Back to Home</a>
-    </p>
-
+<div class="main">
+  <div id="teachers-section">
+    <h2>All Teachers</h2>
+    <div id="teachers-list"></div>
   </div>
-  <!-- Firebase App (core) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 
-<!-- Firebase Authentication -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <div id="students-section" style="display:none;">
+    <h2>Class Students</h2>
+    <h3 id="class-title"></h3>
+    <div id="student-list"></div>
+    <button class="btn" onclick="generateDefaulter()">Generate Defaulter List</button>
+  </div>
+</div>
 
-<!-- Firebase Realtime Database -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script>
+checkAuth();
 
-<!-- Your Firebase config -->
-<script src="firebase.js"></script>
+function showSection(id){
+  document.getElementById('teachers-section').style.display='none';
+  document.getElementById('students-section').style.display='none';
+  document.getElementById(id).style.display='block';
+}
 
-  <script src="firebase.js"></script>
-  <script>
-    const loginForm = document.getElementById("admin-login-form");
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+const teachersList=document.getElementById("teachers-list");
+const studentListDiv=document.getElementById("student-list");
+const classTitle=document.getElementById("class-title");
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          alert("Login Successful!");
-          window.location.href = "admin-dashboard.html";
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
+let currentTeacherId="";
+let currentClass="";
+
+// Load all teachers
+database.ref("teachers").on("value", snapshot=>{
+  teachersList.innerHTML="";
+  snapshot.forEach(teacherSnap=>{
+    const teacher = teacherSnap.val();
+    const card = document.createElement("div");
+    card.className="teacher-card";
+    card.innerHTML=`
+      <h3>${teacher.name||"No Name"} (${teacher.email||"No Email"})</h3>
+      <p>Classes:</p>
+      <ul>
+        ${teacher.classes ? Object.keys(teacher.classes).map(c=>`<li>${c} <button onclick="viewClass('${teacherSnap.key}','${c}')">View</button></li>`).join(''):"<li>No classes</li>"}
+      </ul>
+    `;
+    teachersList.appendChild(card);
+  });
+});
+
+// View a class students
+function viewClass(tid, cname){
+  currentTeacherId=tid;
+  currentClass=cname;
+  classTitle.textContent=`Class: ${cname}`;
+  studentListDiv.innerHTML="";
+  studentListDiv.style.display="block";
+  database.ref(`teachers/${tid}/classes/${cname}/students`).once("value", snap=>{
+    if(!snap.exists()){ studentListDiv.innerHTML="No students added."; return;}
+    snap.forEach(snapChild=>{
+      const student = snapChild.val();
+      const div=document.createElement("div");
+      div.className="student-card";
+      div.textContent=`${student.name||"No Name"} (Roll: ${snapChild.key})`;
+      studentListDiv.appendChild(div);
     });
-  </script>
+  });
+}
 
+// Generate defaulter list for a date
+function generateDefaulter(){
+  const date = prompt("Enter date (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+  if(!date) return;
+  database.ref(`teachers/${currentTeacherId}/classes/${currentClass}/attendance/${date}`).once("value", snap=>{
+    if(!snap.exists()){ alert("No attendance data for this date."); return; }
+    let defaulters=[];
+    snap.forEach(snapChild=>{ if(snapChild.val()==="absent") defaulters.push(snapChild.key); });
+    alert(`Defaulters on ${date}:\n${defaulters.join(", ")||"None"}`);
+  });
+}
+</script>
 </body>
 </html>
