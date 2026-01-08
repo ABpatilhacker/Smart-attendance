@@ -1,55 +1,158 @@
-/* General Reset */
-* { margin:0; padding:0; box-sizing:border-box; font-family: Arial,sans-serif; }
-body { background:#f4f4f9; }
+/* ===== Reset ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-/* Sidebar */
+/* ===== Body ===== */
+body {
+  background: #f4f4f9;
+  color: #333;
+}
+
+/* ===== Sidebar ===== */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
   width: 220px;
   height: 100%;
-  background: linear-gradient(to bottom,#185a9d,#43cea2);
-  color:white;
-  padding-top: 20px;
+  background: linear-gradient(180deg, #4CAF50, #45a049);
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
-.sidebar h2 { text-align:center; margin-bottom:30px; font-size:1.3rem; }
+
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
 .sidebar a {
-  display:block;
-  color:white;
-  padding:12px 20px;
-  text-decoration:none;
-  margin-bottom:5px;
-  border-radius:6px;
-  transition:0.3s;
+  text-decoration: none;
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  display: block;
+  transition: 0.3s;
 }
-.sidebar a:hover, .sidebar a.active { background:rgba(255,255,255,0.2); }
 
-/* Main content */
+.sidebar a:hover, .sidebar a.active {
+  background: rgba(255,255,255,0.2);
+}
+
+.sidebar .logout-btn {
+  margin-top: auto;
+  background: #F44336;
+  text-align: center;
+}
+
+/* ===== Main Content ===== */
 .main-content {
-  margin-left:240px;
-  padding:20px;
+  margin-left: 240px;
+  padding: 20px;
+  min-height: 100vh;
 }
 
-/* Cards */
-.card { background:white; padding:15px; margin-bottom:15px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-.card h3 { margin-bottom:10px; }
+/* ===== Cards ===== */
+.card {
+  background: white;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
 
-/* Buttons */
-.btn { background:#4CAF50; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; transition:0.3s; margin-right:5px; }
-.btn:hover { opacity:0.9; }
-.logout-btn { background:#f44336; }
+/* ===== Buttons ===== */
+.btn {
+  padding: 8px 16px;
+  margin: 5px 0;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  background: #2196F3;
+  color: white;
+  transition: 0.3s;
+}
 
-/* Attendance buttons */
-.present { background:#4CAF50; }
-.absent { background:#f44336; }
-.present:hover, .absent:hover { opacity:0.8; }
+.btn:hover {
+  background: #1976D2;
+}
 
-/* Hidden */
-.hidden { display:none; }
+/* Present/Absent buttons */
+.present {
+  background: #4CAF50;
+}
 
-/* Responsive */
-@media(max-width:768px){
-  .sidebar{width:100%;height:auto;position:relative;}
-  .main-content{margin-left:0;margin-top:20px;}
+.absent {
+  background: #f44336;
+}
+
+/* ===== Login & Index ===== */
+.main-center, .login-container {
+  max-width: 400px;
+  margin: 100px auto;
+  text-align: center;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.main-center h1, .login-container h2 {
+  margin-bottom: 20px;
+}
+
+.main-center p {
+  margin-bottom: 15px;
+}
+
+.login-container input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.login-buttons button {
+  width: 150px;
+  margin: 10px;
+}
+
+/* ===== Attendance lists ===== */
+#students-list div, #students-attendance div {
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  background: #e3f2fd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .sidebar a { display: inline-block; margin-right: 10px; }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .main-center, .login-container {
+    margin: 50px 20px;
+  }
 }
