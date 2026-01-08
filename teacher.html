@@ -1,61 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Teacher Login - Smart Attendance</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
 </head>
 <body>
 
-  <div class="login-container">
+<header class="dashboard-header">
+  <h1>👩‍🏫 Teacher Dashboard</h1>
+  <button class="btn logout" onclick="logout()">Logout</button>
+</header>
 
-    <h2>👩‍🏫 Teacher Login</h2>
+<div class="dashboard-content">
+  <h2>Your Classes</h2>
+  <div id="class-list" class="card-container"></div>
 
-    <form id="teacher-login-form">
-      <label for="email">Email</label>
-      <input type="email" id="email" placeholder="Enter your email" required>
-
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter your password" required>
-
-      <button type="submit" class="btn login-btn">Login</button>
-    </form>
-
-    <p class="back-home">
-      <a href="index.html">⬅ Back to Home</a>
-    </p>
-
+  <div id="student-section" class="hidden">
+    <h3 id="class-title"></h3>
+    <div id="students-list"></div>
+    <button class="btn" onclick="generateDefaulter()">Generate Defaulter List</button>
   </div>
-<!-- Firebase App (core) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+</div>
 
-<!-- Firebase Authentication -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script>
+let currentTeacherId = "";
+let currentClass = "";
 
-<!-- Firebase Realtime Database -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+firebase.auth().onAuthStateChanged(user => {
+  if(!user) window.location='login.html';
+  currentTeacherId = user.uid; // Assuming teacher UID is used in DB
+  loadClasses();
+});
 
-<!-- Your Firebase config -->
-<script src="firebase.js"></script>
-  <script src="firebase.js"></script>
-  <script>
-    const loginForm = document.getElementById("teacher-login-form");
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          alert("Login Successful!");
-          window.location.href = "teacher-dashboard.html";
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
+function loadClasses() {
+  database.ref(`teachers/${currentTeacherId}/classes`).once('value', snap => {
+    const classListDiv = document.getElementById("class-list");
+    classListDiv.innerHTML = "";
+    if(!snap.exists()) { classListDiv.innerHTML="<p>No classes assigned</p>"; return; }
+    snap.forEach(cls => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `<h3>${cls.key}</h3>
+                       <button class="btn" onclick="viewClass('${cls.key}')">View Students</button>`;
+      classListDiv.appendChild(div);
     });
-  </script>
+  });
+}
+
+function viewClass(className) {
+  currentClass = className;
+  document.getElementById("class-title").textContent = `Class: ${className}`;
+  document.getElementById("student-section").classList.remove("hidden");
+
+  database.ref(`teachers/${currentTeacherId}/classes/${className}/students`).once("value", snap => {
+    const studentsList = document.getElementById("students-list");
+    studentsList.innerHTML = "";
+    snap.forEach(snapS => {
+      const s = snapS.val();
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <span>${s.name} (Roll: ${snapS.key})</span>
+        <button class="btn present" onclick="markAttendance('${snapS.key}','present',this)">Present</button>
+        <button class="btn absent" onclick="markAttendance('${snapS.key}','absent',this)">Absent</button>
+      `;
+      div.style.margin = "10px 0";
+      studentsList.appendChild(div);
+    });
+  });
+}
+
+function markAttendance(roll, status, btn) {
+  const date = new Date().toISOString().split('T')[0];
+  database.ref(`teachers/${currentTeacherId}/classes/${currentClass}/attendance/${date}/${roll}`).set(status);
+
+  // Change button colors
+  const parent = btn.parentElement;
+  parent.querySelectorAll("button").forEach(b => b.style.background="gray");
+  btn.style.background = status==="present"?"#4CAF50":"#f44336";
+}
+
+function generateDefaulter() {
+  const date = prompt("Enter date (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+  if(!date) return;
+  database.ref(`teachers/${currentTeacherId}/classes/${currentClass}/attendance/${date}`).once("value", snap => {
+    if(!snap.exists()) { alert("No attendance"); return; }
+    let defaulters = [];
+    snap.forEach(snapS => { if(snapS.val()==="absent") defaulters.push(snapS.key); });
+    alert(`Defaulters: ${defaulters.join(", ") || "None"}`);
+  });
+}
+
+function logout() { firebase.auth().signOut().then(()=>window.location='index.html'); }
+</script>
 
 </body>
 </html>
