@@ -1,159 +1,19 @@
-/* ===== BASIC RESET ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-/* ===== BODY ===== */
-body {
-  background: linear-gradient(to bottom, #e0f7fa, #80deea);
-  color: #333;
-  min-height: 100vh;
-}
-
-/* ===== HEADER ===== */
-.header {
-  text-align: center;
-  padding: 40px 20px 20px;
-  background-color: #00acc1;
-  color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.header h1 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.header p {
-  font-size: 1rem;
-  opacity: 0.9;
-}
-
-/* ===== HERO IMAGE ===== */
-.hero-img {
-  width: 150px;
-  max-width: 50%;
-  margin: 20px auto;
-  display: block;
-}
-
-/* ===== CONTAINER ===== */
-.container {
-  text-align: center;
-  padding: 20px;
-}
-
-/* ===== DESCRIPTION ===== */
-.desc {
-  margin: 15px auto 30px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #555;
-}
-
-/* ===== LOGIN BUTTONS ===== */
-.login-buttons {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.btn {
-  padding: 12px 25px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: white;
-  font-weight: 600;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  display: inline-block;
-  text-align: center;
-}
-
-.btn.admin { background-color: #00796b; }
-.btn.teacher { background-color: #0288d1; }
-.btn.student { background-color: #f57c00; }
-.btn.login-btn { background-color: #0288d1; }
-
-/* Hover effects for buttons */
-.btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-/* ===== LOGIN PAGES ===== */
-.login-container {
-  max-width: 350px;
-  background: #ffffff;
-  margin: 50px auto;
-  padding: 30px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  text-align: center;
-}
-
-.login-container h2 {
-  margin-bottom: 25px;
-  color: #0288d1;
-}
-
-.login-container label {
-  display: block;
-  text-align: left;
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: #555;
-}
-
-.login-container input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #aaa;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-.login-container input:focus {
-  border-color: #0288d1;
-  outline: none;
-}
-
-/* Login submit button */
-.login-container .btn.login-btn {
-  width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-}
-
-/* Back to home link */
-.login-container .back-home {
-  margin-top: 15px;
-}
-
-.login-container .back-home a {
-  text-decoration: none;
-  color: #0288d1;
-  font-weight: 500;
-}
-
-/* ===== FOOTER ===== */
-.footer {
-  text-align: center;
-  padding: 15px;
-  background-color: #00796b;
-  color: white;
-  font-size: 0.9rem;
-  margin-top: 40px;
-}
-
-/* ===== RESPONSIVE ===== */
-@media(max-width: 600px){
-  .hero-img { width: 120px; }
-  .btn { width: 80%; font-size: 1rem; }
-  .login-container { margin: 30px 10px; padding: 25px 15px; }
-}
+/* GENERAL STYLING */
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f4f8; }
+header { background:#4CAF50; color:white; padding:15px; display:flex; justify-content:space-between; align-items:center; }
+header h1 { margin:0; font-size:1.5rem; }
+.btn { padding:6px 12px; margin:2px; border:none; cursor:pointer; border-radius:4px; }
+.logout { background:#F44336; color:white; }
+.main { margin-left:200px; padding:20px; transition: margin-left 0.3s; }
+.sidebar { width:200px; background:#333; color:white; height:100vh; position:fixed; top:0; left:0; padding-top:60px; display:flex; flex-direction:column; }
+.sidebar button { background:none; border:none; color:white; padding:12px; text-align:left; width:100%; cursor:pointer; font-size:1rem; }
+.sidebar button:hover { background:#575757; }
+.dashboard-container { padding:10px; }
+.teacher-card, .student-card, .attendance-card { background:white; padding:12px; margin:10px 0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.teacher-card h3, .student-card h3, .attendance-card h3 { margin:0 0 5px 0; }
+.present { background:#4CAF50; color:white; }
+.absent { background:#F44336; color:white; }
+.student-row { display:flex; justify-content:space-between; align-items:center; background:white; padding:8px; margin:4px 0; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.print-btn { background:#2196F3; color:white; margin-top:10px; }
+.defaulter { color:#F44336; font-weight:bold; }
+@media screen and (max-width:768px){ .main{ margin-left:0; padding:10px;} .sidebar{width:100%; height:auto; position:relative; flex-direction:row; } .sidebar button{ flex:1; text-align:center; } }
