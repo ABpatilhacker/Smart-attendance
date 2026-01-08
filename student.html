@@ -13,14 +13,15 @@
 </head>
 <body>
 
-<header class="dashboard-header">
-  <h1>🎓 Student Dashboard</h1>
-  <button class="btn logout" onclick="firebase.auth().signOut().then(()=>window.location='index.html')">Logout</button>
-</header>
+<div class="sidebar">
+  <h2>🎓 Student</h2>
+  <a href="#" class="active">Attendance Overview</a>
+  <a href="#" class="logout-btn" onclick="firebase.auth().signOut().then(()=>window.location='index.html')">Logout</a>
+</div>
 
-<div class="dashboard-content">
-  <h2>Your Attendance</h2>
-  <div id="attendance-list" class="card-container"></div>
+<div class="main-content">
+  <h2>Attendance Overview</h2>
+  <div id="attendance-list"></div>
 </div>
 
 <script>
