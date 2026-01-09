@@ -1,42 +1,139 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-  <script src="firebase.js"></script>
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase Libraries -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
 </head>
 <body>
 
-<div class="topbar">
-  <h2>Admin Dashboard</h2>
-  <button class="btn danger" onclick="auth.signOut()">Logout</button>
-</div>
+<header class="topbar">
+  <h2>🧑‍💼 Admin Dashboard</h2>
+  <button class="btn danger" onclick="signOutUser()">Logout</button>
+</header>
 
-<div class="container card">
-  <h3>Add Teacher</h3>
-  <input id="tname" placeholder="Teacher Name">
-  <input id="temail" placeholder="Teacher Email">
-  <input id="tpass" placeholder="Password">
-  <button class="btn primary" onclick="addTeacher()">Add Teacher</button>
+<div class="container">
+  <div class="card">
+    <h3>Add Teacher</h3>
+    <input type="email" id="teacher-email" placeholder="Teacher Email">
+    <input type="text" id="teacher-name" placeholder="Teacher Name">
+    <button class="btn primary" onclick="addTeacher()">Add Teacher</button>
+  </div>
+
+  <h3>All Teachers</h3>
+  <div id="teachers-list"></div>
+
+  <div id="student-section" style="display:none;">
+    <h3 id="class-title"></h3>
+    <button class="btn warning" onclick="generateDefaulter()">Generate Defaulter List</button>
+    <div id="students-attendance"></div>
+  </div>
 </div>
 
 <script>
-function addTeacher() {
-  auth.createUserWithEmailAndPassword(temail.value, tpass.value)
-    .then(cred => {
-      database.ref("users/" + cred.user.uid).set({
-        role: "teacher",
-        name: tname.value
-      });
-      alert("Teacher added");
-    })
-    .catch(err => alert(err.message));
-}
-</script>
+checkAuth();
 
+let currentTeacherId = "";
+let currentClass = "";
+
+// Load teachers
+function loadTeachers(){
+  const teachersList = document.getElementById("teachers-list");
+  database.ref("teachers").on("value", snap => {
+    teachersList.innerHTML = "";
+    if(!snap.exists()){
+      teachersList.innerHTML = "<p>No teachers added yet.</p>";
+      return;
+    }
+    snap.forEach(tSnap => {
+      const teacher = tSnap.val();
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <h4>${teacher.name} (${teacher.email})</h4>
+        <p>Classes:</p>
+        <ul>
+          ${teacher.classes ? Object.keys(teacher.classes).map(c => 
+            `<li>${c} <button class="btn secondary" onclick="viewClass('${tSnap.key}','${c}')">View Students</button></li>`
+          ).join('') : "<li>No classes</li>"}
+        </ul>
+      `;
+      teachersList.appendChild(div);
+    });
+  });
+}
+
+// Add teacher
+function addTeacher(){
+  const email = document.getElementById("teacher-email").value.trim();
+  const name = document.getElementById("teacher-name").value.trim();
+  if(!email || !name) return alert("Enter both name and email");
+
+  const teacherId = database.ref("teachers").push().key; // generate unique id
+  database.ref(`teachers/${teacherId}`).set({
+    name: name,
+    email: email,
+    classes: {}
+  });
+
+  document.getElementById("teacher-email").value = "";
+  document.getElementById("teacher-name").value = "";
+}
+
+// View class students
+function viewClass(teacherId, className){
+  currentTeacherId = teacherId;
+  currentClass = className;
+
+  document.getElementById("student-section").style.display = "block";
+  document.getElementById("class-title").textContent = "Class: " + className;
+
+  const studentsDiv = document.getElementById("students-attendance");
+  database.ref(`teachers/${teacherId}/classes/${className}/students`).on("value", snap => {
+    studentsDiv.innerHTML = "";
+    if(!snap.exists()){
+      studentsDiv.innerHTML = "<p>No students added yet.</p>";
+      return;
+    }
+    snap.forEach(snapSt => {
+      const student = snapSt.val();
+      const roll = snapSt.key;
+      const div = document.createElement("div");
+      div.textContent = `${student.name} (Roll: ${roll})`;
+      studentsDiv.appendChild(div);
+    });
+  });
+}
+
+// Generate defaulter list
+function generateDefaulter(){
+  const date = prompt("Enter date (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+  if(!date) return;
+
+  database.ref(`teachers/${currentTeacherId}/classes/${currentClass}/students`).once("value", snap => {
+    if(!snap.exists()) return alert("No students in class");
+    let defaulters = [];
+    snap.forEach(st => {
+      if(!st.val().attendanceToday || st.val().attendanceToday === "absent") defaulters.push(st.key);
+    });
+    alert(`Defaulters on ${date}: \n${defaulters.join(", ") || "None"}`);
+  });
+}
+
+// Auth logout
+function signOutUser(){
+  auth.signOut().then(()=>location.href="index.html");
+}
+
+// Initialize
+loadTeachers();
+</script>
 </body>
 </html>
