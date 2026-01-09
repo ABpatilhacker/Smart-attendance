@@ -1,21 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Smart Attendance</title>
+  <meta charset="UTF-8">
+  <title>Smart Attendance System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="home">
-  <h1>📚 Smart Attendance System</h1>
-  <p>Select your role to continue</p>
+  <div class="home-container">
+    <div class="home-card">
+      <h1>📚 Smart Attendance System</h1>
+      <p>Select your role to continue</p>
 
-  <div class="role-buttons">
-    <a href="login.html"><button class="btn primary">Admin</button></a>
-    <a href="login.html"><button class="btn secondary">Teacher</button></a>
-    <a href="login.html"><button class="btn warning">Student</button></a>
+      <div class="role-buttons">
+        <button class="btn primary" onclick="location.href='login.html?role=admin'">
+          👨‍💼 Admin
+        </button>
+        <button class="btn secondary" onclick="location.href='login.html?role=teacher'">
+          👩‍🏫 Teacher
+        </button>
+        <button class="btn warning" onclick="location.href='login.html?role=student'">
+          🎓 Student
+        </button>
+      </div>
+    </div>
   </div>
-</div>
 
 </body>
 </html>
