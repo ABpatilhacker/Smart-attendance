@@ -1,41 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Teacher Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-  <script src="firebase.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<!-- Firebase Libraries -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
 </head>
 <body>
 
-<div class="topbar">
-  <h2>Teacher Dashboard</h2>
-</div>
+<header class="topbar">
+  <h2>🧑‍🏫 Teacher Dashboard</h2>
+  <button class="btn danger" onclick="signOutUser()">Logout</button>
+</header>
 
-<div class="container card">
-  <h3>Add Student</h3>
-  <input id="sname" placeholder="Student Name">
-  <input id="semail" placeholder="Student Email">
-  <input id="spass" placeholder="Password">
-  <button class="btn secondary" onclick="addStudent()">Add Student</button>
+<div class="container">
+  <h3>Classes</h3>
+  <div id="classes-list"></div>
+
+  <div id="student-section" style="display:none;">
+    <h3 id="class-title"></h3>
+
+    <div class="card">
+      <h4>Add Student</h4>
+      <input type="text" id="student-name" placeholder="Student Name">
+      <input type="text" id="student-roll" placeholder="Roll Number">
+      <button class="btn primary" onclick="addStudent()">Add Student</button>
+    </div>
+
+    <div class="card">
+      <h4>Students</h4>
+      <div id="students-attendance"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-function addStudent() {
-  auth.createUserWithEmailAndPassword(semail.value, spass.value)
-    .then(cred => {
-      database.ref("users/" + cred.user.uid).set({
-        role: "student",
-        name: sname.value
-      });
-      alert("Student added");
-    })
-    .catch(err => alert(err.message));
+checkAuth(); // Make sure user is logged in
+
+let currentTeacherId = "";
+let currentClass = "";
+
+// Load teacher info & classes
+auth.onAuthStateChanged(user => {
+  if(user){
+    currentTeacherId = user.uid;
+    loadClasses();
+  } else {
+    location.href = "login.html";
+  }
+});
+
+function loadClasses(){
+  const classesList = document.getElementById("classes-list");
+  classesList.innerHTML = "";
+
+  database.ref(`teachers/${currentTeacherId}/classes`).on("value", snap => {
+    classesList.innerHTML = "";
+    if(!snap.exists()){
+      classesList.innerHTML = "<p>No classes added yet.</p>";
+      return;
+    }
+    snap.forEach(clsSnap => {
+      const clsName = clsSnap.key;
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <p>${clsName} <button class="btn secondary" onclick="viewClass('${clsName}')">View</button></p>
+      `;
+      classesList.appendChild(div);
+    });
+  });
+}
+
+// View class & students
+function viewClass(className){
+  currentClass = className;
+  document.getElementById("student-section").style.display = "block";
+  document.getElementById("class-title").textContent = "Class: " + className;
+
+  const studentsDiv = document.getElementById("students-attendance");
+
+  database.ref(`teachers/${currentTeacherId}/classes/${className}/students`).on("value", snap => {
+    studentsDiv.innerHTML = "";
+    if(!snap.exists()){
+      studentsDiv.innerHTML = "<p>No students added yet.</p>";
+      return;
+    }
+    snap.forEach(studentSnap => {
+      const student = studentSnap.val();
+      const roll = studentSnap.key;
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <p>${student.name} (Roll: ${roll})</p>
+        <div class="attendance-btns">
+          <button class="btn present ${student.attendanceToday==='present'?'active':''}" onclick="markAttendance('${roll}','present',this)">Present</button>
+          <button class="btn absent ${student.attendanceToday==='absent'?'active':''}" onclick="markAttendance('${roll}','absent',this)">Absent</button>
+        </div>
+      `;
+      studentsDiv.appendChild(div);
+    });
+  });
+}
+
+// Add student
+function addStudent(){
+  const name = document.getElementById("student-name").value.trim();
+  const roll = document.getElementById("student-roll").value.trim();
+
+  if(!name || !roll) return alert("Enter both name and roll number");
+
+  database.ref(`teachers/${currentTeacherId}/classes/${currentClass}/students/${roll}`).set({
+    name: name
+  });
+
+  document.getElementById("student-name").value = "";
+  document.getElementById("student-roll").value = "";
+}
+
+// Mark attendance
+function markAttendance(roll, status, btn){
+  const today = new Date().toISOString().split("T")[0];
+  database.ref(`teachers/${currentTeacherId}/classes/${currentClass}/students/${roll}/attendanceToday`).set(status);
+
+  // Update button colors
+  const parent = btn.parentElement;
+  parent.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+// Logout
+function signOutUser(){
+  auth.signOut().then(()=>location.href="index.html");
 }
 </script>
 
 </body>
-  </html>
+</html>
